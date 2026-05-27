@@ -1,14 +1,11 @@
-# Define the SharePoint site URL
-$SiteURL = "place your URL here"
+param(
+    [Parameter(Mandatory = $true, HelpMessage = "SharePoint site URL, e.g. https://yourdomain.sharepoint.com/sites/YourSite")]
+    [string]$SiteURL,
 
-# Prompt the user for the number of versions to keep
-$VersionsToKeep = Read-Host "Enter the number of latest versions to keep"
-
-# Ensure input is an integer
-if (-not [int]::TryParse($VersionsToKeep, [ref]0)) {
-    Write-Host "The input is not a valid integer. Please enter a valid number of versions to keep."
-    exit
-}
+    [Parameter(Mandatory = $true, HelpMessage = "Number of latest versions to keep (minimum 1)")]
+    [ValidateRange(1, [int]::MaxValue)]
+    [int]$VersionsToKeep
+)
 
 # Connect to the SharePoint site
 Connect-PnPOnline -Url $SiteURL -UseWebLogin
