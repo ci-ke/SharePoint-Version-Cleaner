@@ -14,7 +14,7 @@ if (-not [int]::TryParse($VersionsToKeep, [ref]0)) {
 Connect-PnPOnline -Url $SiteURL -UseWebLogin
 
 # Retrieve all document libraries in the site
-$documentLibraries = Get-PnPList | Where-Object { $_.BaseTemplate -eq 101 }
+$documentLibraries = Get-PnPList | Where-Object { $_.BaseTemplate -in @(101, 700) }
 
 foreach ($lib in $documentLibraries) {
     Write-Host "Processing Document Library:" $lib.Title

@@ -28,3 +28,36 @@ To target a specific SharePoint site, modify the $SiteURL variable at the beginn
 ```powershell
 $SiteURL = "https://yourdomain.sharepoint.com/sites/YourSite"
 ```
+
+## Troubleshooting
+
+### OneDrive for Business: Document Library Not Found
+
+Standard SharePoint document libraries use `BaseTemplate = 101`. However, **OneDrive for Business personal sites** store files in a `文档`（Documents）library with `BaseTemplate = 700`, which is a special template number specific to OneDrive.
+
+If the script runs without processing any files, first check which libraries exist on the site and their template numbers:
+
+```powershell
+Connect-PnPOnline -Url "https://yourdomain-my.sharepoint.com/personal/username" -UseWebLogin
+Get-PnPList | Select-Object Title, BaseTemplate | Format-Table -AutoSize
+```
+
+A OneDrive site typically shows output like this:
+
+```
+Title              BaseTemplate
+-----              ------------
+文档 / Documents        700
+样式库                   101
+PersonalCacheLibrary     101
+表单模板                 101
+...
+```
+
+The script already handles this by filtering for both template types:
+
+```powershell
+$documentLibraries = Get-PnPList | Where-Object { $_.BaseTemplate -in @(101, 700) }
+```
+
+If you encounter a similar issue on other SharePoint variants, use the diagnostic command above to identify the correct `BaseTemplate` number, and add it to the filter accordingly.
