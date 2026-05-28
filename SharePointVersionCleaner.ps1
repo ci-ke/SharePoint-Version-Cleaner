@@ -80,9 +80,8 @@ foreach ($lib in $documentLibraries) {
             for ($i = $versions.Count - 1; $i -ge $VersionsToKeep; $i--) {
                 Write-Host "Deleting older version $($versions[$i].VersionLabel) of $($item["FileRef"])"
                 $versions[$i].DeleteObject()
-                SharePointPnPPowerShellOnline\Invoke-PnPQuery
             }
-
+            SharePointPnPPowerShellOnline\Invoke-PnPQuery
         }
         catch {
             Write-Host "Error accessing versions for $($item["FileRef"]): $_"
