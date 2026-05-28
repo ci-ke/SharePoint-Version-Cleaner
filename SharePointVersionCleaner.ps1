@@ -11,16 +11,16 @@ param(
 )
 
 # Connect to the SharePoint site
-Connect-PnPOnline -Url $SiteURL -UseWebLogin
+SharePointPnPPowerShellOnline\Connect-PnPOnline -Url $SiteURL -UseWebLogin
 
 # Retrieve all document libraries in the site
-$documentLibraries = Get-PnPList | Where-Object { $_.BaseTemplate -in @(101, 700) }
+$documentLibraries = SharePointPnPPowerShellOnline\Get-PnPList | Where-Object { $_.BaseTemplate -in @(101, 700) }
 $normalizedRelativePath = $RelativePath.Replace("\", "/").Trim("/")
 
 foreach ($lib in $documentLibraries) {
     Write-Host "Processing Document Library:" $lib.Title
 
-    $rootFolder = Get-PnPProperty -ClientObject $lib -Property RootFolder
+    $rootFolder = SharePointPnPPowerShellOnline\Get-PnPProperty -ClientObject $lib -Property RootFolder
     $libraryRootUrl = $rootFolder.ServerRelativeUrl.TrimEnd("/")
 
     if ([string]::IsNullOrWhiteSpace($normalizedRelativePath)) {
@@ -58,12 +58,12 @@ foreach ($lib in $documentLibraries) {
 </View>
 "@
 
-    $items = Get-PnPListItem -List $lib -PageSize 500 -Query $camlQuery
+    $items = SharePointPnPPowerShellOnline\Get-PnPListItem -List $lib -PageSize 500 -Query $camlQuery
     
     foreach ($item in $items) {
         try {
-            $file = Get-PnPFile -Url $item["FileRef"] -AsListItem
-            $versions = Get-PnPProperty -ClientObject $file -Property Versions
+            $file = SharePointPnPPowerShellOnline\Get-PnPFile -Url $item["FileRef"] -AsListItem
+            $versions = SharePointPnPPowerShellOnline\Get-PnPProperty -ClientObject $file -Property Versions
             
             # Calculate the number of versions to delete
             $versionsToDelete = $versions.Count - $VersionsToKeep
@@ -80,7 +80,7 @@ foreach ($lib in $documentLibraries) {
             for ($i = $versions.Count - 1; $i -ge $VersionsToKeep; $i--) {
                 Write-Host "Deleting older version $($versions[$i].VersionLabel) of $($item["FileRef"])"
                 $versions[$i].DeleteObject()
-                Invoke-PnPQuery
+                SharePointPnPPowerShellOnline\Invoke-PnPQuery
             }
 
         }
@@ -94,4 +94,4 @@ Write-Host "Version cleanup complete."
 
 # Disconnect the session
 
-Disconnect-PnPOnline
+SharePointPnPPowerShellOnline\Disconnect-PnPOnline
