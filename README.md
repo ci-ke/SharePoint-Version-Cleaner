@@ -17,17 +17,44 @@ Install-Module SharePointPnPPowerShellOnline -AllowClobber
 
 ## Usage
 Open PowerShell and navigate to the directory containing the SharePointVersionCleaner.ps1 script.
-Run the script using the following command: .\SharePointVersionCleaner.ps1
-
-When prompted, enter the number of latest versions you wish to keep for each document.
-Note: The script requires you to log in to your SharePoint site. A web login prompt will appear for authentication.
-
-## Configuration
-To target a specific SharePoint site, modify the $SiteURL variable at the beginning of the script with your SharePoint site URL:
+Run the script using the following command:
 
 ```powershell
-$SiteURL = "https://yourdomain.sharepoint.com/sites/YourSite"
+.\SharePointVersionCleaner.ps1 `
+  -SiteURL "https://yourdomain.sharepoint.com/sites/YourSite" `
+  -VersionsToKeep 5
 ```
+
+By default, the script processes each document library from its root folder recursively.
+
+To process only a specific folder and all files under its subfolders, pass `-RelativePath`. The path is relative to each document library root, not the site URL:
+
+```powershell
+.\SharePointVersionCleaner.ps1 `
+  -SiteURL "https://yourdomain.sharepoint.com/sites/YourSite" `
+  -VersionsToKeep 5 `
+  -RelativePath "Reports/2024"
+```
+
+You can also point `-RelativePath` to a single file in the library root or under a folder:
+
+```powershell
+.\SharePointVersionCleaner.ps1 `
+  -SiteURL "https://yourdomain.sharepoint.com/sites/YourSite" `
+  -VersionsToKeep 5 `
+  -RelativePath "report.docx"
+```
+
+Use `/` to explicitly process the whole library:
+
+```powershell
+.\SharePointVersionCleaner.ps1 `
+  -SiteURL "https://yourdomain.sharepoint.com/sites/YourSite" `
+  -VersionsToKeep 5 `
+  -RelativePath "/"
+```
+
+Note: The script requires you to log in to your SharePoint site. A web login prompt will appear for authentication.
 
 ## Troubleshooting
 
