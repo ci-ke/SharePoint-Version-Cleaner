@@ -10,17 +10,24 @@ param(
     [string]$RelativePath = "/"
 )
 
+# Load legacy SharePoint PnP Online module to avoid conflicts with PnP.PowerShell
+if (Get-Module -Name PnP.PowerShell -ListAvailable | Where-Object { $_.Path -in (Get-Module).Path }) {
+    Write-Error "PnP.PowerShell is already loaded. Please restart PowerShell and run this script first."
+    exit 1
+}
+Import-Module SharePointPnPPowerShellOnline
+
 # Connect to the SharePoint site
-SharePointPnPPowerShellOnline\Connect-PnPOnline -Url $SiteURL -UseWebLogin
+Connect-PnPOnline -Url $SiteURL -UseWebLogin
 
 # Retrieve all document libraries in the site
-$documentLibraries = SharePointPnPPowerShellOnline\Get-PnPList | Where-Object { $_.BaseTemplate -in @(101, 700) }
+$documentLibraries = Get-PnPList | Where-Object { $_.BaseTemplate -in @(101, 700) }
 $normalizedRelativePath = $RelativePath.Replace("\", "/").Trim("/")
 
 foreach ($lib in $documentLibraries) {
     Write-Host "Processing Document Library:" $lib.Title
 
-    $rootFolder = SharePointPnPPowerShellOnline\Get-PnPProperty -ClientObject $lib -Property RootFolder
+    $rootFolder = Get-PnPProperty -ClientObject $lib -Property RootFolder
     $libraryRootUrl = $rootFolder.ServerRelativeUrl.TrimEnd("/")
 
     if ([string]::IsNullOrWhiteSpace($normalizedRelativePath)) {
@@ -58,12 +65,12 @@ foreach ($lib in $documentLibraries) {
 </View>
 "@
 
-    $items = SharePointPnPPowerShellOnline\Get-PnPListItem -List $lib -PageSize 500 -Query $camlQuery
+    $items = Get-PnPListItem -List $lib -PageSize 500 -Query $camlQuery
     
     foreach ($item in $items) {
         try {
-            $file = SharePointPnPPowerShellOnline\Get-PnPFile -Url $item["FileRef"] -AsListItem
-            $versions = SharePointPnPPowerShellOnline\Get-PnPProperty -ClientObject $file -Property Versions
+            $file = Get-PnPFile -Url $item["FileRef"] -AsListItem
+            $versions = Get-PnPProperty -ClientObject $file -Property Versions
             
             # Calculate the number of versions to delete
             $versionsToDelete = $versions.Count - $VersionsToKeep
@@ -81,7 +88,7 @@ foreach ($lib in $documentLibraries) {
                 Write-Host "Deleting older version $($versions[$i].VersionLabel) of $($item["FileRef"])"
                 $versions[$i].DeleteObject()
             }
-            SharePointPnPPowerShellOnline\Invoke-PnPQuery
+            Invoke-PnPQuery
         }
         catch {
             Write-Host "Error accessing versions for $($item["FileRef"]): $_"
@@ -93,4 +100,4 @@ Write-Host "Version cleanup complete."
 
 # Disconnect the session
 
-SharePointPnPPowerShellOnline\Disconnect-PnPOnline
+Disconnect-PnPOnline

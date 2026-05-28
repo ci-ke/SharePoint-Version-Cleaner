@@ -92,6 +92,7 @@ Some tenants restrict which applications can request tokens, including Microsoft
 Standard SharePoint document libraries use `BaseTemplate = 101`. OneDrive for Business personal sites store files in a library with `BaseTemplate = 700`. If the PnP script runs without processing any files, check which libraries exist and their template numbers:
 
 ```powershell
+Import-Module SharePointPnPPowerShellOnline
 Connect-PnPOnline -Url "https://yourdomain-my.sharepoint.com/personal/username" -UseWebLogin
 Get-PnPList | Select-Object Title, BaseTemplate | Format-Table -AutoSize
 ```
